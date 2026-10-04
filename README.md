@@ -1,6 +1,6 @@
 # PDF Soru-Cevap Asistanı (RAG + LLM)
 
-Bir PDF belgesine doğal dilde soru sorabileceğiniz, Retrieval-Augmented Generation (RAG) tabanlı bir çalışma asistanı. [Haystack](https://haystack.deepset.ai/) framework'ü kullanılarak geliştirilmiştir.
+Bir PDF belgesine doğal dilde soru sorabileceğiniz, Retrieval-Augmented Generation (RAG) tabanlı bir çalışma asistanı. [Haystack](https://haystack.deepset.ai/) framework'ü ve OpenAI modelleri kullanılarak geliştirilmiştir.
 
 Sistem, yüklenen bir PDF'i parçalara ayırır, bu parçaları vektör temsillerine (embedding) çevirir ve bir vektör deposunda indeksler. Kullanıcı soru sorduğunda, soruyla en alakalı parçalar bulunur ve bir Büyük Dil Modeli'ne (LLM) verilerek yalnızca belgedeki bilgilere dayalı bir cevap üretilir.
 
@@ -19,9 +19,8 @@ Bu yaklaşım, modelin yalnızca verilen belgeden cevap vermesini sağlayarak ha
 ## Kullanılan Teknolojiler
 
 - **Haystack** — RAG pipeline orkestrasyonu
-- **Sentence-Transformers** (`all-MiniLM-L6-v2`) — metin embedding'leri
+- **OpenAI** — metin embedding'leri (`OpenAIDocumentEmbedder` / `OpenAITextEmbedder`) ve cevap üretimi (`OpenAIChatGenerator`)
 - **InMemoryDocumentStore** — vektör deposu
-- **OpenAI / Google Gemini** — cevap üreten LLM
 - **PyPDF** — PDF metin çıkarımı
 
 ## Kurulum
@@ -33,8 +32,8 @@ pip install -r requirements.txt
 ## Kullanım
 
 1. Notebook'u Google Colab'da veya yerel bir Jupyter ortamında açın.
-2. API anahtarınızı bir ortam değişkeni olarak tanımlayın (aşağıdaki güvenlik notuna bakın).
-3. İndeksleme hücresini çalıştırarak PDF'i belleğe alın.
+2. OpenAI API anahtarınızı bir ortam değişkeni olarak tanımlayın (aşağıdaki güvenlik notuna bakın).
+3. İndeksleme hücresini çalıştırarak PDF'i belleğe alın ve embedding'leri oluşturun.
 4. Sorgu hücresinde `query` değişkenini değiştirerek sorularınızı sorun.
 
 ### Örnek Sorular
@@ -47,23 +46,26 @@ query = "Hangi projeler anlatılmış?"
 
 ## Güvenlik Notu
 
-API anahtarlarınızı **asla** doğrudan koda yazmayın veya bu repoya yüklemeyin. Anahtarlar ortam değişkenleri üzerinden okunur:
+API anahtarlarınızı **asla** doğrudan koda yazmayın veya bu repoya yüklemeyin. Anahtar, ortam değişkeni üzerinden okunur:
 
 ```python
 import os
 os.environ["OPENAI_API_KEY"] = "..."  # Colab'da userdata, yerelde .env kullanın
 ```
 
-Google Colab kullanıyorsanız, anahtarları "Gizli Anahtarlar" (Secrets) panelinden ekleyin ve koddan şöyle çağırın:
+Google Colab kullanıyorsanız, anahtarı "Gizli Anahtarlar" (Secrets) panelinden ekleyin ve koddan şöyle çağırın:
 
 ```python
+import os
 from google.colab import userdata
 os.environ["OPENAI_API_KEY"] = userdata.get("OPENAI_API_KEY")
 ```
 
+> **Not:** OpenAI API'si kullanım başına ücretlendirilir. Embedding ve küçük sorgular çok düşük maliyetlidir, ancak API'yi kullanmak için hesabınızda kredi bulunması gerekir.
+
 ## Geliştirme Fikirleri
 
-- Çok dilli embedding modeli (`paraphrase-multilingual-MiniLM-L12-v2`) ile Türkçe sorgu kalitesini artırmak
+- Çok dilli embedding ile Türkçe sorgu kalitesini artırmak
 - Cevaplarda kaynak sayfa referansı göstermek
 - Kalıcı bir vektör veritabanına (ChromaDB, Qdrant) geçmek
 - Web arayüzü (FastAPI + React) eklemek
